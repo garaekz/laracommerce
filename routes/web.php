@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,7 @@ Route::get('/', function () {
 });
 
 Route::resource('products', ProductController::class);
+Route::resource('categories', CategoryController::class);
 
 Route::middleware([
     'auth:sanctum',
