@@ -26,9 +26,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::resource('products', ProductController::class);
-Route::resource('categories', CategoryController::class);
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -37,4 +34,10 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
 });
+
+// Public routes
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+Route::resource('products', ProductController::class);

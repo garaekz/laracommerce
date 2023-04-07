@@ -5,23 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Services\CategoryService;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Throwable;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    public function __construct(
+        private CategoryService $service,
+    ){}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        try {
+            return Inertia::render('Categories/Index', [
+                'categories' => $this->service->fetchAll(),
+            ]);
+        } catch (Throwable $th) {
+            $this->handleError($th, 'An error occurred while trying to list the categories.');
+        }
     }
 
     /**
@@ -29,23 +37,16 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request)
     {
-        //
-    }
+        try {
+            $this->service->create($request->validated());
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Category $category)
-    {
-        //
-    }
+            return redirect()
+                ->route('categories.index')
+                ->withSuccess('Category created successfully.');
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Category $category)
-    {
-        //
+        } catch (Throwable $th) {
+            $this->handleError($th, 'Category could not be created.');
+        }
     }
 
     /**
@@ -53,7 +54,19 @@ class CategoryController extends Controller
      */
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        //
+        try {
+            $isUpdated = $this->service->update($category, $request->validated());
+
+            if (!$isUpdated) {
+                throw new Exception("It was not possible to update the category.");
+            }
+
+            return redirect()
+                ->route('categories.index')
+                ->withSuccess('Category updated successfully.');
+        } catch (Throwable $th) {
+            $this->handleError($th, 'Category could not be updated.');
+        }
     }
 
     /**
@@ -61,6 +74,28 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        try {
+            $isDeleted = $this->service->delete($category);
+
+            if (!$isDeleted) {
+                throw new Exception("It was not possible to delete the category.");
+
+            }
+
+            return redirect()
+                    ->route('categories.index')
+                    ->withSuccess('Category deleted successfully.');
+        } catch (Throwable $th) {
+            $this->handleError($th, 'Category could not be deleted.');
+        }
+    }
+
+    private function handleError(Throwable $th, $message)
+    {
+        $code = Str::random(6);
+        Log::error("[{$code}] - Error message: {$th}");
+        return redirect()
+            ->back()
+            ->withError("{$message} Error code: {$code}");
     }
 }

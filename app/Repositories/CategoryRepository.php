@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Contracts\CategoryRepositoryInterface;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Collection;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -11,7 +12,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         private Category $model
     ){}
 
-    public function all()
+    public function all(): Collection
     {
         return $this->model->all();
     }
@@ -21,15 +22,13 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $this->model->create($data);
     }
 
-    public function update(array $data, $id): Category
+    public function update(array $data, $model): bool
     {
-        $category = $this->model->find($id);
-        $category->update($data);
-        return $category;
+        return $model->update($data);
     }
 
-    public function delete($id): bool {
-        return $this->model->destroy($id);
+    public function delete($model): bool | null {
+        return $model->delete();
     }
 
     public function find($id): Category
