@@ -2,15 +2,15 @@
 
 namespace App\Repositories;
 
-use App\Contracts\CategoryRepositoryInterface;
-use App\Models\Category;
+use App\Contracts\ProductRepositoryInterface;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class CategoryRepository implements CategoryRepositoryInterface
+class ProductRepository implements ProductRepositoryInterface
 {
     public function __construct(
-        private Category $model
+        private Product $model
     ){}
 
     public function all(): Collection
@@ -18,26 +18,31 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $this->model->all();
     }
 
-    public function create(array $data): Category
+    public function allPaginated(int $size = 12): LengthAwarePaginator
+    {
+        return $this->model->paginate($size);
+    }
+
+    public function create(array $data): Product
     {
         return $this->model->create($data);
     }
 
-    public function update(array $data, Category $model): bool
+    public function update(array $data, Product $model): bool
     {
         return $model->update($data);
     }
 
-    public function delete(Category $model): bool | null {
+    public function delete(Product $model): bool | null {
         return $model->delete();
     }
 
-    public function find($id): Category
+    public function find($id): Product
     {
         return $this->model->find($id);
     }
 
-    public function findBy($field, $value): Category | null
+    public function findBy($field, $value): Product | null
     {
         return $this->model->where($field, $value)->first();
     }

@@ -89,13 +89,4 @@ class CategoryController extends Controller
             $this->handleError($th, 'Category could not be deleted.');
         }
     }
-
-    private function handleError(Throwable $th, $message)
-    {
-        $code = Str::random(6);
-        Log::error("[{$code}] - Error message: {$th}");
-        return redirect()
-            ->back()
-            ->withError("{$message} Error code: {$code}");
-    }
 }

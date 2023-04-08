@@ -11,11 +11,12 @@ interface BaseModelRepositoryInterface
 
     public function create(array $data): Model;
 
-    public function update(array $data, $model): bool;
-
-    public function delete($model): bool | null;
+    // Both methods need to have different signatures
+    // public function update(array $data, $model): bool;
+    // public function delete(Model $model): bool | null;
 
     public function find($id): Model;
 
-    public function findBy($field, $value): Model;
+    public function findBy($field, $value): Model | null;
+    public function findMultipleBy(array $where): Collection;
 }

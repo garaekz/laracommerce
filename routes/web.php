@@ -35,9 +35,8 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+    Route::apiResource('categories', CategoryController::class)->except(['show']);
+    Route::apiResource('products', ProductController::class)->except(['show']);
 });
 
 // Public routes
-Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-Route::resource('products', ProductController::class);
