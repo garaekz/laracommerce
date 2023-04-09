@@ -6,8 +6,10 @@ use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Services\ProductService;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Throwable;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -25,7 +27,11 @@ class ProductController extends Controller
                 'products' => $this->service->fetchPaginated(),
             ]);
         } catch (Throwable $th) {
-            handleControllerException($th, 'An error occurred while trying to list the products.');
+            $code = Str::random(6);
+            Log::error("[{$code}] - Error message: {$th}");
+            return redirect()
+                ->back()
+                ->withError("An error occurred while trying to list the products. Error code: {$code}");
         }
     }
 
@@ -41,7 +47,11 @@ class ProductController extends Controller
                 ->route('products.index')
                 ->withSuccess('Product created successfully.');
         } catch (Throwable $th) {
-            handleControllerException($th, 'Product could not be created.');
+            $code = Str::random(6);
+            Log::error("[{$code}] - Error message: {$th}");
+            return redirect()
+                ->back()
+                ->withError("Product could not be created. Error code: {$code}");
         }
     }
 
@@ -65,7 +75,11 @@ class ProductController extends Controller
                 ->route('products.index')
                 ->withSuccess('Product updated successfully.');
         } catch (Throwable $th) {
-            handleControllerException($th, 'Product could not be updated.');
+            $code = Str::random(6);
+            Log::error("[{$code}] - Error message: {$th}");
+            return redirect()
+                ->back()
+                ->withError("Product could not be updated. Error code: {$code}");
         }
     }
 
@@ -81,7 +95,11 @@ class ProductController extends Controller
                 ->route('products.index')
                 ->withSuccess('Product deleted successfully.');
         } catch (Throwable $th) {
-            handleControllerException($th, 'Product could not be deleted.');
+            $code = Str::random(6);
+            Log::error("[{$code}] - Error message: {$th}");
+            return redirect()
+                ->back()
+                ->withError("Product could not be deleted. Error code: {$code}");
         }
     }
 }

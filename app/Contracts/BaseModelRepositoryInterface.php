@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 interface BaseModelRepositoryInterface
 {
-    public function all(): Collection;
+    public function all();
 
-    public function create(array $data): Model;
+    public function create(array $data);
 
     // Both methods need to have different signatures
     // public function update(array $data, $model): bool;
     // public function delete(Model $model): bool | null;
 
-    public function find($id): Model;
+    public function find($id);
 
-    public function findBy($field, $value): Model | null;
-    public function findMultipleBy(array $where): Collection;
+    public function findBy(array $wheres);
+    public function findMultipleBy(array $where);
 }

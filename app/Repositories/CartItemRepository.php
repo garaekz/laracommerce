@@ -2,15 +2,15 @@
 
 namespace App\Repositories;
 
-use App\Contracts\ProductRepositoryInterface;
-use App\Models\Product;
+use App\Contracts\CartItemRepositoryInterface;
+use App\Models\CartItem;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class ProductRepository implements ProductRepositoryInterface
+class CartItemRepository implements CartItemRepositoryInterface
 {
     public function __construct(
-        private Product $model
+        private CartItem $model
     ){}
 
     public function all(): Collection
@@ -23,35 +23,31 @@ class ProductRepository implements ProductRepositoryInterface
         return $this->model->paginate($size);
     }
 
-    public function create(array $data): Product
+    public function create(array $data): CartItem
     {
         return $this->model->create($data);
     }
 
-    public function update(array $data, Product $model): bool
+    public function update(array $data, CartItem $model): bool
     {
         return $model->update($data);
     }
 
-    public function delete(Product $model): bool | null {
+    public function delete(CartItem $model): bool | null {
         return $model->delete();
     }
 
-    public function find($id): Product
+    public function find($id): CartItem
     {
         return $this->model->find($id);
     }
 
-    public function findBy(array $wheres): Product | null
+    public function findBy(array $wheres): CartItem | null
     {
-        if (isset($wheres[0]) && !is_array($wheres[0])) {
-            $wheres = [$wheres];
-        }
-
         return $this->model->where($wheres)->first();
     }
 
-    public function findMultipleBy(array $where): Collection
+    public function findMultipleBy(array $where): ?CartItem
     {
         return $this->model->where($where)->get();
     }

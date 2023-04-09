@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
@@ -40,3 +41,6 @@ Route::middleware([
 });
 
 // Public routes
+Route::apiResource('cart', CartController::class)->except(['destroy', 'show']);
+Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');

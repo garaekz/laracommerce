@@ -29,10 +29,11 @@ class ProductService
         if (isset($data['image'])) {
             $data['image'] = $data['image']->store('products', 'local');
         }
-        $slugExists = $this->repository->findBy('slug', $data['slug']);
+        $slugExists = $this->repository->findBy(['slug', $data['slug']]);
         if ($slugExists) {
             $data['slug'] = "{$data['slug']}-{$this->generateUlid()}";
         }
+
         return $this->repository->create($data);
     }
 

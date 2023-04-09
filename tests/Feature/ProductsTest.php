@@ -2,7 +2,6 @@
 
 use App\Models\Product;
 use App\Models\User;
-use App\Services\ProductService;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Illuminate\Http\UploadedFile;
@@ -123,13 +122,18 @@ it('creates a product when a slug already exists', function () {
         'image' => $file,
     ];
 
-    $this->actingAs(User::factory()->create())
-        ->post('/products', $payload)
-        ->assertRedirect()
-        ->assertSessionHasNoErrors();
+    $user = User::factory()->create();
 
-    $this->actingAs(User::factory()->create())
-        ->post('/products', $payload)
+    $this->actingAs($user)
+        ->post('/products', $payload);
+
+    $this->actingAs($user)
+        ->post('/products', [
+            'name' => 'Product name',
+            'description' => 'Product description',
+            'price' => 11.40,
+            'image' => $file,
+        ])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
