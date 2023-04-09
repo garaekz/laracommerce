@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NavigationController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -18,15 +19,13 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Public routes
+Route::get('/', [NavigationController::class, 'index'])->name('shop');
+Route::apiResource('cart', CartController::class)->except(['destroy', 'show']);
+Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
 
+// Authenticated routes
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -40,7 +39,3 @@ Route::middleware([
     Route::apiResource('products', ProductController::class)->except(['show']);
 });
 
-// Public routes
-Route::apiResource('cart', CartController::class)->except(['destroy', 'show']);
-Route::get('cart', [CartController::class, 'show'])->name('cart.show');
-Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
