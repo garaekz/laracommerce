@@ -43,7 +43,10 @@ class CartController extends Controller
             return redirect()
                 ->back()
                 ->withCookie($cookie)
-                ->withSuccess('Cart updated.');
+                ->with([
+                    'cart' => $this->service->getWithItems($cookie),
+                    'success' => 'Cart updated.'
+                ]);
 
         } catch (Throwable $th) {
             $code = Str::random(6);
@@ -67,9 +70,11 @@ class CartController extends Controller
 
             $cart = $this->service->getWithItems($cookie);
 
-            return Inertia::render('Cart', [
-                'cart' => $cart,
-            ]);
+            return redirect()
+                ->back()
+                ->withCookie($cookie)
+                ->withSuccess('Cart updated.')
+                ->with('cart', $cart);
         } catch (Throwable $th) {
             $code = Str::random(6);
             Log::error("[{$code}] - Error message: {$th}");

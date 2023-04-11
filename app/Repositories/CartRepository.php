@@ -44,7 +44,7 @@ class CartRepository implements CartRepositoryInterface
 
     public function findBy(array $wheres): ?Cart
     {
-        return $this->model->where($wheres)->first();
+        return $this->model->where($wheres)->with('items.product')->first();
     }
 
     public function findMultipleBy(array $where): Collection

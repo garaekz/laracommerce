@@ -1,15 +1,20 @@
 <script setup>
 import { ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import { useDark, useToggle } from '@vueuse/core'
+import CartSidebar from '@/Components/CartSidebar.vue';
 
-defineProps({
+const props = defineProps({
     title: String,
+    cart_count: Number,
+    cart: Object,
+    flash: Object,
 });
 
 const showingNavigationDropdown = ref(false);
@@ -25,9 +30,100 @@ const switchToTeam = (team) => {
 const logout = () => {
     router.post(route('logout'));
 };
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
+
+const showCart = ref(false);
+const closeCart = () => showCart.value = false;
+
+const cart = ref(null)
+const getCartForm = useForm({});
+const handleShowCart = () => {
+    if (props.cart_count) return false;
+
+    getCartForm.get(route('cart.show'),
+        {
+            preserveState: true,
+            onSuccess: (response) => {
+                showCart.value = true;
+                cart.value = response.props.flash.cart;
+            }
+        }
+    )
+}
+
+const postCartForm = useForm({
+    product_id: null,
+    quantity: 1,
+});
+const handleQuantityUpdate = (item, quantity) => {
+    postCartForm.product_id = item.product.id;
+    postCartForm.quantity = quantity;
+    postCartForm.post(route('cart.store'), {
+        preserveState: true,
+        onSuccess: (response) => {
+            cart.value = response.props.flash.cart;
+            if (response.props.flash.cart.items.length === 0) {
+                showCart.value = false;
+            }
+        }
+    })
+}
 </script>
 
 <template>
+    <CartSidebar :show="showCart" @close="closeCart">
+        <template #title>
+            <div class="flex justify-between">
+                <div class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Shopping Cart
+                </div>
+                <!-- Close button -->
+                <button @click="closeCart" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </template>
+
+        <template #content>
+            <div v-for="item in cart.items" :key="item.id"
+                class="flex justify-between items-center py-4 gap-2 border-b border-gray-100 ">
+                <div class="flex items-center w-36 p-4 bg-gray-100 rounded-lg">
+                    <img class="w-full object-cover" :src="item.product.image" alt="" srcset="">
+                </div>
+                <div class="grow flex justify-start items-start flex-col">
+                    <h1 class="text-xl font-bold">{{ item.product.name }}</h1>
+                    <h2 class="text-lg font-semibold text-gray-500">$ {{ item.product.price }}</h2>
+                </div>
+                <div class="flex">
+                    <button
+                        @click="handleQuantityUpdate(item, item.quantity - 1)"
+                        class="bg-gray-200 p-3 text-2xl">
+                        -
+                    </button>
+                    <input type="text" class="w-12 text-center" :value="item.quantity">
+                    <button
+                        @click="handleQuantityUpdate(item, item.quantity + 1)"
+                    class="bg-gray-200 p-3 text-2xl">
+                        +
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <template #footer>
+            <div class="flex flex-col">
+                <div class="flex w-full justify-between py-4">
+                    <h1 class="text-xl font-bold">Subtotal</h1>
+                    <h2 class="text-xl font-bold">$ {{ cart.subtotal }}</h2>
+                </div>
+            </div>
+        </template>
+    </CartSidebar>
     <div>
 
         <Head :title="title" />
@@ -43,7 +139,7 @@ const logout = () => {
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center">
                                 <Link :href="route('dashboard')">
-                                    <ApplicationMark class="block h-9 w-auto" />
+                                <ApplicationMark class="block h-9 w-auto" />
                                 </Link>
                             </div>
 
@@ -61,7 +157,24 @@ const logout = () => {
                             </div>
                         </div>
 
-                        <div class="hidden sm:flex sm:items-center sm:ml-6">
+                        <div class="hidden sm:flex sm:gap-2 sm:items-center sm:ml-6">
+                            <button @click="toggleDark()" class="bg-gray-200 dark:bg-gray-700 rounded-full p-1">
+                                {{ isDark }}
+                            </button>
+                            <!-- Cart icon -->
+                            <button @click="$page.props.cart_count && handleShowCart()"
+                                class="relative flex justify-center items-center duration-300 hover:text-white after:w-[45px] after:h-[45px] after:bg-secondary after:rounded-full after:absolute after:z-[1] after:scale-0 hover:after:scale-100 after:duration-300 h-8 w-8">
+                                <span v-if="$page.props.cart_count"
+                                    class="text-center bg-primary border-2 border-white text-xs font-medium text-white rounded-full h-[22px] w-[22px] absolute top-[-12px] right-[-12px] z-10">
+                                    {{ $page.props.cart_count }}
+                                </span>
+                                <svg class="text-3xl z-10" fill="none" stroke="currentColor" stroke-width="1.5"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z">
+                                    </path>
+                                </svg>
+                            </button>
                             <div class="ml-3 relative">
                                 <!-- Teams Dropdown -->
                                 <Dropdown v-if="$page.props.jetstream.hasTeamFeatures" align="right" width="60">

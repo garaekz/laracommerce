@@ -14,8 +14,17 @@ class Cart extends Model
         'cookie_cart_id',
     ];
 
+    protected $appends = [
+        'subtotal',
+    ];
+
     public function items()
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function getSubtotalAttribute()
+    {
+        return $this->items->sum(fn($item) => $item->product->price * $item->quantity);
     }
 }

@@ -21,14 +21,23 @@ class CartService
         if (!$cart) {
             throw new Exception('Cart not found');
         }
-        $cart->load('items');
         return $cart;
+    }
+
+    public function count(string $cookie_id): int
+    {
+        $cart = $this->cartRepository->findBy(['cookie_cart_id' => $cookie_id]);
+        if (!$cart) {
+            return 0;
+        }
+        return $cart->items->sum('quantity');
     }
 
     public function update(array $data, $cookie_id)
     {
         $cart = $this->updateOrCreate($data, $cookie_id);
-        return $this->addOrUpdateCartItem($data, $cart);
+        $this->addOrUpdateCartItem($data, $cart);
+        return $cart;
     }
 
     public function delete(string $cookie_id): ?bool
@@ -63,6 +72,10 @@ class CartService
 
         if ($cartItem) {
             return $this->updateExistingCartItem($cartItem, $data);
+        }
+
+        if ($data['quantity'] === 0) {
+            return false;
         }
 
         return $this->createCartItem($data, $cart);

@@ -2,11 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(
+        private CartService $cartService,
+    ){}
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -36,8 +41,14 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $cookie = $request->cookie('cart_id');
         return array_merge(parent::share($request), [
-            //
+            // This shares the cart items count with all Inertia pages.
+            'cart_count' => $cookie ? $this->cartService->count($cookie) : 0,
+            'cart' => fn () => $request->session()->get('cart'),
+            'flash' => [
+                'cart' => fn () => $request->session()->get('cart'),
+            ],
         ]);
     }
 }
