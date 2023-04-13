@@ -58,7 +58,6 @@ const postCartForm = useForm({
     quantity: 1,
 });
 const handleQuantityUpdate = (item, quantity) => {
-    console.log(item, quantity);
     postCartForm.item_id = item.id;
     postCartForm.quantity = quantity;
     postCartForm.put(route('cart.update'), {
@@ -119,10 +118,12 @@ const handleQuantityUpdate = (item, quantity) => {
                     <h1 class="text-xl font-bold">Subtotal</h1>
                     <h2 class="text-xl font-bold">$ {{ cart.subtotal }}</h2>
                 </div>
-                <div class="flex gap-6 font-bold"><button
+                <div class="flex gap-6 font-bold">
+                    <Link
+                        :href="route('cart.index')"
                         class="block relative w-full text-center text-white bg-primary py-[15px] rounded-md transition duration-300 before:absolute before:inset-0 before:w-full before:h-full before:transition-all before:duration-500 hover:before:scale-110 before:rounded before:bg-primary z-10 before:z-[-1]">
                         View Cart
-                    </button>
+                    </Link>
                     <Link
                         :href="route('checkout')"
                         class="block relative w-full text-center text-white bg-secondary py-[15px] rounded-md transition duration-300 before:absolute before:inset-0 before:w-full before:h-full before:transition-all before:duration-500 hover:before:scale-110 before:rounded before:bg-secondary z-10 before:z-[-1]">
@@ -170,8 +171,10 @@ const handleQuantityUpdate = (item, quantity) => {
                                 {{ isDark }}
                             </button>
                             <!-- Cart icon -->
-                            <button @click="$page.props.cart_count && handleShowCart()"
-                                class="relative flex justify-center items-center duration-300 hover:text-white after:w-[45px] after:h-[45px] after:bg-secondary after:rounded-full after:absolute after:z-[1] after:scale-0 hover:after:scale-100 after:duration-300 h-8 w-8">
+                            <button
+                                v-if="!route().current('cart.index')"
+                                @click="$page.props.cart_count && handleShowCart()"
+                                class="relative flex justify-center items-center duration-300 hover:text-white after:w-[45px] after:h-[45px] after:bg-secondary after:rounded-full after:absolute after:z-[1] after:scale-0 hover:after:scale-100 after:duration-300 h-8 w-8 dark:text-gray-100">
                                 <span v-if="$page.props.cart_count"
                                     class="text-center bg-primary border-2 border-white text-xs font-medium text-white rounded-full h-[22px] w-[22px] absolute top-[-12px] right-[-12px] z-10">
                                     {{ $page.props.cart_count }}

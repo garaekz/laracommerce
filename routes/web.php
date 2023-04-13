@@ -22,7 +22,7 @@ use Inertia\Inertia;
 // Public routes
 Route::get('/', [NavigationController::class, 'index'])->name('shop');
 Route::apiResource('cart', CartController::class)->except(['destroy', 'show', 'update']);
-Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+Route::get('cart/see', [CartController::class, 'show'])->name('cart.show');
 Route::put('cart', [CartController::class, 'update'])->name('cart.update');
 Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
 

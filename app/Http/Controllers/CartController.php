@@ -23,6 +23,30 @@ class CartController extends Controller
     ){}
 
     /**
+     * Display a listing of the resource.
+     */
+    public function index() {
+        try {
+            $cookie = request()->cookie(CART_COOKIE_NAME);
+            if (!$cookie) {
+                throw new Exception('Cart not found.');
+            }
+
+            $cart = $this->service->getWithItems($cookie);
+
+            return Inertia::render('Cart', [
+                'cart' => $cart,
+            ]);
+        } catch (Throwable $th) {
+            $code = Str::random(6);
+            Log::error("[{$code}] - Error message: {$th}");
+            return redirect()
+                ->back()
+                ->withErrors("Cart could not be found. Error code: {$code}");
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreCartRequest $request)

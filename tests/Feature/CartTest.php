@@ -225,7 +225,7 @@ it('shows the cart with all his items', function () {
 
     $this
         ->withCookie('cart_id', $cart_id)
-        ->get('/cart')
+        ->get('/cart/see')
         ->assertRedirect();
 
     $this->assertDatabaseCount('cart_items', 5);
