@@ -34,26 +34,25 @@ class CartController extends Controller
             }
 
             $data = $request->validated();
+
             if (auth()->check()) {
                 $data['user_id'] = auth()->id();
             }
 
-            $this->service->update($data, $cookie);
-
+            $this->service->addItem($data, $cookie);
             return redirect()
                 ->back()
                 ->withCookie($cookie)
                 ->with([
                     'cart' => $this->service->getWithItems($cookie),
-                    'success' => 'Cart updated.'
+                    'success' => 'Product added to cart.'
                 ]);
-
         } catch (Throwable $th) {
             $code = Str::random(6);
             Log::error("[{$code}] - Error message: {$th}");
             return redirect()
                 ->back()
-                ->withError("Product could not be added to cart. Error code: {$code}");
+                ->withErrors("Product could not be added to cart. Error code: {$code}");
         }
     }
 
@@ -81,7 +80,35 @@ class CartController extends Controller
             return redirect()
                 ->back()
                 ->withCookie($cookie)
-                ->withError('Error while getting cart.');
+                ->withErrors('Error while getting cart.');
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateCartRequest $request) {
+        try {
+            $cookie = request()->cookie(CART_COOKIE_NAME);
+            if (!$cookie) {
+                throw new Exception('Cart not found.');
+            }
+
+            $data = $request->validated();
+
+            $cart = $this->service->update($data, $cookie);
+
+            return redirect()
+                ->back()
+                ->withCookie($cookie)
+                ->withSuccess('Cart updated.')
+                ->with('cart', $cart);
+        } catch (Throwable $th) {
+            $code = Str::random(6);
+            Log::error($th);
+            return redirect()
+                ->back()
+                ->withErrors("Cart could not be updated. Error code: {$code}");
         }
     }
 
@@ -109,7 +136,16 @@ class CartController extends Controller
             Log::error("[{$code}] - Error message: {$e}");
             return redirect()
                 ->back()
-                ->withError("Cart could not be deleted. Error code: {$code}");
+                ->withErrors("Cart could not be deleted. Error code: {$code}");
         }
+    }
+
+    public function checkout() {
+        $cart = $this->service->getForCheckout(request()->cookie(CART_COOKIE_NAME));
+        return Inertia::render('Checkout', [
+            'cart' => $cart,
+            'tax' => $cart->tax,
+            'total' => $cart->total,
+        ]);
     }
 }

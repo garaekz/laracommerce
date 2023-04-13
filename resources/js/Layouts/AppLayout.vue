@@ -54,13 +54,14 @@ const handleShowCart = () => {
 }
 
 const postCartForm = useForm({
-    product_id: null,
+    item_id: null,
     quantity: 1,
 });
 const handleQuantityUpdate = (item, quantity) => {
-    postCartForm.product_id = item.product.id;
+    console.log(item, quantity);
+    postCartForm.item_id = item.id;
     postCartForm.quantity = quantity;
-    postCartForm.post(route('cart.store'), {
+    postCartForm.put(route('cart.update'), {
         preserveState: true,
         onSuccess: (response) => {
             cart.value = response.props.flash.cart;
@@ -100,15 +101,12 @@ const handleQuantityUpdate = (item, quantity) => {
                     <h2 class="text-lg font-semibold text-gray-500">$ {{ item.product.price }}</h2>
                 </div>
                 <div class="flex">
-                    <button
-                        @click="handleQuantityUpdate(item, item.quantity - 1)"
-                        class="bg-gray-200 p-3 text-2xl">
+                    <button @click="handleQuantityUpdate(item, item.quantity - 1)" class="bg-gray-200 p-3 text-2xl">
                         -
                     </button>
-                    <input type="text" class="w-12 text-center" :value="item.quantity">
-                    <button
-                        @click="handleQuantityUpdate(item, item.quantity + 1)"
-                    class="bg-gray-200 p-3 text-2xl">
+                    <input @change="handleQuantityUpdate(item, $event.target.value)" type="text" class="w-12 text-center"
+                        :value="item.quantity">
+                    <button @click="handleQuantityUpdate(item, item.quantity + 1)" class="bg-gray-200 p-3 text-2xl">
                         +
                     </button>
                 </div>
@@ -120,6 +118,16 @@ const handleQuantityUpdate = (item, quantity) => {
                 <div class="flex w-full justify-between py-4">
                     <h1 class="text-xl font-bold">Subtotal</h1>
                     <h2 class="text-xl font-bold">$ {{ cart.subtotal }}</h2>
+                </div>
+                <div class="flex gap-6 font-bold"><button
+                        class="block relative w-full text-center text-white bg-primary py-[15px] rounded-md transition duration-300 before:absolute before:inset-0 before:w-full before:h-full before:transition-all before:duration-500 hover:before:scale-110 before:rounded before:bg-primary z-10 before:z-[-1]">
+                        View Cart
+                    </button>
+                    <Link
+                        :href="route('checkout')"
+                        class="block relative w-full text-center text-white bg-secondary py-[15px] rounded-md transition duration-300 before:absolute before:inset-0 before:w-full before:h-full before:transition-all before:duration-500 hover:before:scale-110 before:rounded before:bg-secondary z-10 before:z-[-1]">
+                        Checkout
+                    </Link>
                 </div>
             </div>
         </template>

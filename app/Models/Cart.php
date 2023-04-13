@@ -25,6 +25,18 @@ class Cart extends Model
 
     public function getSubtotalAttribute()
     {
-        return $this->items->sum(fn($item) => $item->product->price * $item->quantity);
+        $subtotal = $this->items->sum(fn($item) => $item->product->price * $item->quantity);
+        return round($subtotal, 2);
+    }
+
+    public function getTaxAttribute()
+    {
+        $tax = $this->subtotal * 0.16;
+        return round($tax, 2);
+    }
+
+    public function getTotalAttribute()
+    {
+        return $this->subtotal + $this->tax;
     }
 }

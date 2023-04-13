@@ -42,7 +42,7 @@ class CartRepository implements CartRepositoryInterface
         return $this->model->find($id);
     }
 
-    public function findBy(array $wheres): ?Cart
+    public function findBy(array $wheres, array $with = []): ?Cart
     {
         return $this->model->where($wheres)->with('items.product')->first();
     }

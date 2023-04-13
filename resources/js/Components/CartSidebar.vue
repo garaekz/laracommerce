@@ -35,7 +35,7 @@ const close = () => {
                 <slot name="title" />
             </div>
 
-            <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            <div class="mt-4 text-sm text-gray-600 dark:text-gray-400 flex-auto">
                 <slot name="content" />
             </div>
         </div>

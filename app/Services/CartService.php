@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\CartRepositoryInterface;
 use App\Contracts\CartItemRepositoryInterface;
 use App\Models\Cart;
+use App\Models\CartItem;
 use Exception;
 
 class CartService
@@ -17,11 +18,13 @@ class CartService
 
     public function getWithItems(string $cookie_id): Cart
     {
-        $cart = $this->cartRepository->findBy(['cookie_cart_id' => $cookie_id]);
+        $cart = $this->cartRepository->findBy(
+            ['cookie_cart_id' => $cookie_id],
+            ['items.product']);
         if (!$cart) {
             throw new Exception('Cart not found');
         }
-        return $cart;
+        return $cart->load('items.product');
     }
 
     public function count(string $cookie_id): int
@@ -35,8 +38,31 @@ class CartService
 
     public function update(array $data, $cookie_id)
     {
-        $cart = $this->updateOrCreate($data, $cookie_id);
-        $this->addOrUpdateCartItem($data, $cart);
+        $cart = $this->getOrCreate($data, $cookie_id);
+        $this->updateCartItemQuantity($data);
+        return $cart->load('items.product');
+    }
+
+    public function addItem(array $data, $cookie_id) {
+        $cart =  $this->getOrCreate($data, $cookie_id);
+        $existingItem = $this->cartItemRepository->findBy([
+            'cart_id' => $cart->id,
+            'product_id' => $data['product_id']
+        ]);
+
+        if ($existingItem) {
+            $existingItem->quantity += $data['quantity'];
+            $this->cartItemRepository->update($existingItem->toArray(), $existingItem);
+            return $cart;
+        }
+
+        $item = $this->cartItemRepository->create([
+            'cart_id' => $cart->id,
+            'product_id' => $data['product_id'],
+            'quantity' => $data['quantity']
+        ]);
+
+        $cart->items()->save($item);
         return $cart;
     }
 
@@ -49,55 +75,46 @@ class CartService
         return $this->cartRepository->delete($cart);
     }
 
-    private function updateOrCreate(array $data, string $cookie_id): Cart
+    public function getForCheckout(string $cookie_id): Cart
     {
         $cart = $this->cartRepository->findBy(['cookie_cart_id' => $cookie_id]);
         if (!$cart) {
-            $payload = ['cookie_cart_id' => $cookie_id];
-            if (isset($data['user_id'])) {
-                $payload['user_id'] = $data['user_id'];
-            }
-            $cart = $this->cartRepository->create($payload);
+            throw new Exception('Cart not found');
         }
-
-        return $cart;
+        return $cart->load('items.product');
     }
 
-    private function addOrUpdateCartItem(array $data, Cart $cart): bool
+    private function getOrCreate(array $data, string $cookie_id): Cart
     {
-        $cartItem = $this->cartItemRepository->findBy([
-            'product_id' => $data['product_id'],
-            'cart_id' => $cart->id,
-        ]);
+        $cart = $this->cartRepository->findBy(['cookie_cart_id' => $cookie_id]);
 
-        if ($cartItem) {
-            return $this->updateExistingCartItem($cartItem, $data);
+        if($cart) return $cart;
+
+        $payload = ['cookie_cart_id' => $cookie_id];
+        if (isset($data['user_id'])) {
+            $payload['user_id'] = $data['user_id'];
         }
 
-        if ($data['quantity'] === 0) {
-            return false;
+        return $this->cartRepository->create($payload);
+    }
+
+    private function updateCartItemQuantity(array $data): bool
+    {
+        $cartItem = $this->cartItemRepository->find($data['item_id']);
+
+        if (!$cartItem) {
+            throw new Exception('Item not found in cart');
         }
 
-        return $this->createCartItem($data, $cart);
+        return $this->updateExistingCartItem($cartItem, $data);
     }
 
     private function updateExistingCartItem($cartItem, array $data): bool
     {
-        $cartItem->quantity = $data['quantity'];
+        $cartItem->quantity = (int) $data['quantity'];
         if ($cartItem->quantity === 0) {
             return $this->cartItemRepository->delete($cartItem);
         }
         return $this->cartItemRepository->update($cartItem->toArray(), $cartItem);
-    }
-
-    private function createCartItem(array $data, Cart $cart): bool
-    {
-        $newCartItem = $this->cartItemRepository->create([
-            'product_id' => $data['product_id'],
-            'cart_id' => $cart->id,
-            'quantity' => $data['quantity'],
-        ]);
-
-        return $newCartItem->exists;
     }
 }

@@ -17,6 +17,6 @@ interface BaseModelRepositoryInterface
 
     public function find($id);
 
-    public function findBy(array $wheres);
+    public function findBy(array $wheres, array $with = []);
     public function findMultipleBy(array $where);
 }

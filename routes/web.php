@@ -21,8 +21,9 @@ use Inertia\Inertia;
 
 // Public routes
 Route::get('/', [NavigationController::class, 'index'])->name('shop');
-Route::apiResource('cart', CartController::class)->except(['destroy', 'show']);
+Route::apiResource('cart', CartController::class)->except(['destroy', 'show', 'update']);
 Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+Route::put('cart', [CartController::class, 'update'])->name('cart.update');
 Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
 
 // Authenticated routes
@@ -37,5 +38,6 @@ Route::middleware([
 
     Route::apiResource('categories', CategoryController::class)->except(['show']);
     Route::apiResource('products', ProductController::class)->except(['show']);
+    Route::get('checkout', [CartController::class, 'checkout'])->name('checkout');
 });
 

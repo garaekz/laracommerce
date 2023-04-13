@@ -42,7 +42,7 @@ class CartItemRepository implements CartItemRepositoryInterface
         return $this->model->find($id);
     }
 
-    public function findBy(array $wheres): CartItem | null
+    public function findBy(array $wheres, array $with = []): CartItem | null
     {
         return $this->model->where($wheres)->first();
     }

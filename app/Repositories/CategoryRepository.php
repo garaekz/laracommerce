@@ -37,7 +37,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $this->model->find($id);
     }
 
-    public function findBy(array $wheres): Category | null
+    public function findBy(array $wheres, array $with = []): Category | null
     {
         return $this->model->where($wheres)->first();
     }

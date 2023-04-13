@@ -42,7 +42,7 @@ class ProductRepository implements ProductRepositoryInterface
         return $this->model->find($id);
     }
 
-    public function findBy(array $wheres): Product | null
+    public function findBy(array $wheres, array $with = []): Product | null
     {
         if (isset($wheres[0]) && !is_array($wheres[0])) {
             $wheres = [$wheres];
